@@ -1,0 +1,7 @@
+CREATE DATABASE duoq;
+
+CREATE USER duoq_admin WITH PASSWORD 'password';
+
+GRANT ALL PRIVILEGES ON DATABASE duoq TO duoq_admin;
+
+
