@@ -12,6 +12,9 @@ from rest_framework import generics, status, permissions
 from rest_framework_simplejwt.tokens import RefreshToken
 
 # Create your views here.
+@login_required
+def profile(request):
+    return render(request, 'user/profile')
 
 class GameList(generics.ListCreateAPIView):
     queryset = Game.objects.all()
@@ -28,7 +31,7 @@ class UserGameList(generics.ListCreateAPIView):
    
     def get_queryset(self):
         user_id = self.kwargs['user_id']
-        profile_id = Profile.object.filter(user_id = user_id)[id]
+        profile_id = Profile.object.filter(user_id = user_id)
         return UserGame.object.filter(profile_id=profile_id)
 
 
@@ -50,9 +53,7 @@ class UserGameDetail(generics.RetrieveUpdateDestroyAPIView):
         return UserGame.objects.filter(profile_id=profile_id, game_id=game_id)
 
 
-@login_required
-def profile(request):
-    return render(request, 'users/profile')
+
 
 class CreateUserView(generics.CreateAPIView):
   queryset = User.objects.all()

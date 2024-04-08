@@ -19,7 +19,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField()
     name = models.CharField(max_length=100)
-    dob = models.DateField('DOB')
+    dob = models.DateField('DOB', null=True, blank=True)
     profile_picture = models.ImageField(upload_to='profile-pics', blank=True, null=True)
     banner = models.ImageField(upload_to='banners', blank=True, null=True)
     games = models.ManyToManyField(Game, through='UserGame')
@@ -37,6 +37,9 @@ class UserGame(models.Model):
     ign = models.CharField(max_length=30)
     rank = models.CharField(max_length=20)
     competitive = models.BooleanField()
+
+    def __str__(self):
+        return f'{self.profile_id.name} - {self.game_id.name}'
 
 
 class Match(models.Model):
