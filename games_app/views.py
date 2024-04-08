@@ -19,7 +19,7 @@ class GameList(generics.ListCreateAPIView):
 class UserGameList(generics.ListCreateAPIView):
     serializer_class = UserGameSerializer
     filter_backends = [filters.SearchFilter]
-    search_fields = ['rank']
+    search_fields = ['rank', 'game_id', 'status']
    
     def get_queryset(self):
         user_id = self.kwargs['user_id']
@@ -40,6 +40,6 @@ class UserGameDetail(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
 
     def get_queryset(self):
-        user_id = self.kwargs['user_id']
+        profile_id = self.kwargs['profile_id']
         game_id = self.kwargs['game_id']
-        return UserGame.objects.filter(user_id=user_id and game_id=game_id)
+        return UserGame.objects.filter(profile_id=profile_id and game_id=game_id)
