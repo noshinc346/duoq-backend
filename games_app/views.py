@@ -36,12 +36,12 @@ class GameDetail(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
 
     def get_queryset(self):
-        game_id = self.kwargs['game_id']
+        game_id = self.kwargs['id']
         return Game.objects.filter(id=game_id)
 
 class UserGameDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserGameSerializer
-    lookup_field = 'id'
+   # lookup_field = 'id'
 
     def get_queryset(self):
         profile_id = self.kwargs['profile_id']
