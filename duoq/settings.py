@@ -25,7 +25,12 @@ SECRET_KEY = 'django-insecure-8n(m-p*58^v@pzspped1@ofrzh=&*nutzyh*ha_qp8um8=)e9b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+# CORS settings
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Adjust the port if your frontend runs on a different one
+]
 
 
 # Application definition
@@ -41,6 +46,7 @@ INSTALLED_APPS = [
     'user_app',
     'chat_app',
     'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -51,7 +57,34 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware'
 ]
+
+# Configuration for django-rest-framework-simplejwt
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': False,
+
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+}
 
 ROOT_URLCONF = 'duoq.urls'
 
