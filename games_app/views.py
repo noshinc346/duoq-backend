@@ -18,6 +18,8 @@ class GameList(generics.ListCreateAPIView):
 
 class UserGameList(generics.ListCreateAPIView):
     serializer_class = UserGameSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['rank']
    
     def get_queryset(self):
         user_id = self.kwargs['user_id']
@@ -33,4 +35,11 @@ class GameDetail(generics.RetrieveUpdateDestroyAPIView):
         game_id = self.kwargs['game_id']
         return Game.objects.filter(id=game_id)
 
+class UserGameDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = UserGameSerializer
+    lookup_field = 'id'
 
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        game_id = self.kwargs['game_id']
+        return UserGame.objects.filter(user_id=user_id and game_id=game_id)
