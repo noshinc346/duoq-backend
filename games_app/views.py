@@ -1,4 +1,5 @@
 from rest_framework.views import APIView
+from django.shortcuts import render
 from rest_framework.response import Response
 from .models import Game, UserGame, Profile
 from .serializers import GameSerializer, UserGameSerializer, UserSerializer, ProfileSerializer
@@ -101,9 +102,15 @@ class VerifyUserView(APIView):
   #Profile View
 class ProfileView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ProfileSerializer
-    lookup_field = 'id'
+   # lookup_field = 'id'
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
       user = self.request.user
-      return Profile.objects.fitler(user=user)
-    
+      return Profile.objects.filter(user=user)
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        obj = generics.get_object_or_404(queryset)
+        self.check_object_permissions(self.request, obj)
+        return obj
