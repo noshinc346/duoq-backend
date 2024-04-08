@@ -1,3 +1,5 @@
+DROP DATABASE duoq;
+
 CREATE DATABASE duoq;
 
 CREATE USER duoq_admin WITH PASSWORD 'password';
