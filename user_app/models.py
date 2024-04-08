@@ -9,7 +9,7 @@ class Profile(models.Model):
     bio = models.TextField()
     name = models.CharField(max_length=100)
     dob = models.DateField('DOB')
-    prfile_picture = models.ImageField(upload_to='profile-pics', blnak=True, null=True)
+    profile_picture = models.ImageField(upload_to='profile-pics', blnak=True, null=True)
     banner = models.ImageField(upload_to='banners', blnak=True, null=True)
     games = models.ManyToManyField(Game, through='UserGame')
     matches = models.ManyToManyField('self', through='Match', symmetrical=False)

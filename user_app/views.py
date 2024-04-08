@@ -3,15 +3,21 @@ from rest_framework import generics, status, permissions
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from .serializers import UserSerializer
+from .serializers import UserSerializer, ProfileSerializer
 from rest_framework import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
+from .models import Profile
 from rest_framework.exceptions import PermissionDenied
+from django.contrib.auth.decorators import login_required
 
 
 # Create your views here.
+
+@login_required
+def profile(request):
+    return render(request, 'users/profile')
+
 class CreateUserView(generics.CreateAPIView):
   queryset = User.objects.all()
   serializer_class = UserSerializer
@@ -55,3 +61,14 @@ class VerifyUserView(APIView):
       'access': str(refresh.access_token),
       'user': UserSerializer(user).data
     })
+  
+  
+  #Profile View
+  class ProfileView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = ProfileSerializer
+    lookup_field = 'id'
+
+    def get_queryset(self):
+      user = self.request.user
+      return Profile.objects.fitler(user=user)
+    
