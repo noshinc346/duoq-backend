@@ -1,3 +1,23 @@
 from django.db import models
+from .models import Profile
 
 # Create your models here.
+STATUS = (
+    ('PD', 'Played'),
+    ('PG', 'Playing'),
+    ('I', 'Interested')
+)
+class Game(models.Model):
+    name = models.CharField(max_length=30)
+    image = models.TextField()
+
+    def __str__(self):
+            return self.name
+
+class UserGame(models.Model):
+    profile_id = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    game_id = models.ForeignKey(Game, on_delete=models.CASCADE)
+    status = models.CharField(max_length=2, choices=STATUS, default=STATUS[0][0])
+    ign = models.CharField(max_length=30)
+    rank = models.CharField(max_length=20)
+    competitive = models.BooleanField()
