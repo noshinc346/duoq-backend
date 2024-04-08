@@ -9,7 +9,7 @@ class GameSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class UserGameSerializer(serializers.ModelSerializer):
-    user = ProfileSerializer(many=TRUE, read_only=True)
+    user = ProfileSerializer(many=True, read_only=True)
     game = GameSerializer(many=True, read_only=True)
 
     class Meta:

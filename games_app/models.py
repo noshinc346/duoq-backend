@@ -1,5 +1,5 @@
 from django.db import models
-from .models import Profile
+from user_app.models import Profile
 
 # Create your models here.
 STATUS = (
@@ -21,3 +21,6 @@ class UserGame(models.Model):
     ign = models.CharField(max_length=30)
     rank = models.CharField(max_length=20)
     competitive = models.BooleanField()
+
+    def __str__(self):
+        return f'{self.profile_id.name} - {self.game_id.name}'

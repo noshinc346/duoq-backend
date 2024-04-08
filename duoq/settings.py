@@ -114,9 +114,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'duoq',
-        'HOST': 'localhost',
-        'USER': 'duoq_admin',
-        'PASSWORD': 'password',
+      
        # 'PORT': 3000
     }
 }
