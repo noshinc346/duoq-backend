@@ -1,5 +1,5 @@
 from django.db import models
-from user_app.models import User
+from .models import Profile
 
 # Create your models here.
 STATUS = (
@@ -15,8 +15,8 @@ class Game(models.Model):
             return self.name
 
 class UserGame(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    profile_id = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    game_id = models.ForeignKey(Game, on_delete=models.CASCADE)
     status = models.CharField(max_length=2, choices=STATUS, default=STATUS[0][0])
     ign = models.CharField(max_length=30)
     rank = models.CharField(max_length=20)
