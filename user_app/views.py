@@ -94,6 +94,17 @@ class MatchList(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        print(user)
         profile = Profile.objects.filter(user=user)
         return Match.objects.filter(Q(user1_profile=profile[0]) | Q(user2_profile=profile[0]))
+
+
+class MatchDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = MatchSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        user = self.request.user
+        profile = Profile.objects.filter(user=user)
+        return Match.objects.filter(Q(user1_profile=profile[0]) | Q(user2_profile=profile[0]))
+
