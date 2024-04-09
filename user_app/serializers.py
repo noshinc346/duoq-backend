@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from .models import Profile
+from .models import Profile, Match
 from rest_framework import serializers
 
 #User serializer
@@ -18,8 +18,15 @@ class UserSerializer(serializers.ModelSerializer):
       )
       
       return user
+
     
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
+        fields = '__all__'
+
+
+class MatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Match
         fields = '__all__'
