@@ -3,13 +3,14 @@ from rest_framework import generics, status, permissions
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from .serializers import UserSerializer, ProfileSerializer
+from .serializers import UserSerializer, ProfileSerializer, MatchSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
-from .models import Profile
+from .models import Profile, Match
 from rest_framework.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 
 
 # Create your views here.
@@ -64,7 +65,7 @@ class VerifyUserView(APIView):
   
   
   #Profile View
-class ProfileView(generics.RetrieveUpdateDestroyAPIView):
+class ProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = ProfileSerializer
    # lookup_field = 'id'
     permission_classes = [permissions.IsAuthenticated]
@@ -79,3 +80,20 @@ class ProfileView(generics.RetrieveUpdateDestroyAPIView):
         self.check_object_permissions(self.request, obj)
         return obj
     
+
+class ProfileDetail(generics.RetrieveAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+    lookup_field = 'id'
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class MatchList(generics.ListCreateAPIView):
+    serializer_class = MatchSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        print(user)
+        profile = Profile.objects.filter(user=user)
+        return Match.objects.filter(Q(user1_profile=profile[0]) | Q(user2_profile=profile[0]))

@@ -22,6 +22,7 @@ class Profile(models.Model):
 class Match(models.Model):
     user1_profile = models.ForeignKey(Profile, related_name='matches_as_user1', on_delete=models.CASCADE)
     user2_profile = models.ForeignKey(Profile, related_name='matches_as_user2', on_delete=models.CASCADE)
+    recipricated = models.BooleanField(default=False)
 
     def __str__(self):
         return f'Match between {self.user1_profile.user.username} and {self.user2_profile.user.username}'
