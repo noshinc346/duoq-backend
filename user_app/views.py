@@ -3,11 +3,11 @@ from rest_framework import generics, status, permissions
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from .serializers import UserSerializer, ProfileSerializer, MatchSerializer
+from .serializers import UserSerializer, ProfileSerializer, MatchSerializer, PreferenceSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
-from .models import Profile, Match
+from .models import Profile, Match, Preference
 from rest_framework.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -108,3 +108,24 @@ class MatchDetail(generics.RetrieveUpdateDestroyAPIView):
         profile = Profile.objects.filter(user=user)
         return Match.objects.filter(Q(user1_profile=profile[0]) | Q(user2_profile=profile[0]))
 
+
+class PreferenceDetail(generics.RetrieveUpdateAPIView):
+    serializer_class = PreferenceSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        profile = Profile.objects.filter(user=user)
+        return Preference.objects.filter(profile=profile[0])
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        obj = generics.get_object_or_404(queryset)
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+class OtherPreferenceDetail(generics.RetrieveAPIView):
+    serializer_class = PreferenceSerializer
+    queryset = Preference.objects.all()
+    lookup_field = 'id'
+    permission_class = [permissions.IsAuthenticated]

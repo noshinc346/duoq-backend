@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from .models import Profile, Match
+from .models import Profile, Match, Preference
 from rest_framework import serializers
 
 #User serializer
@@ -29,4 +29,10 @@ class ProfileSerializer(serializers.ModelSerializer):
 class MatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Match
+        fields = '__all__'
+
+
+class PreferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Preference
         fields = '__all__'
