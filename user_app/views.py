@@ -100,7 +100,7 @@ class MatchList(generics.ListCreateAPIView):
         return Match.objects.filter(Q(user1_profile=profile[0]) | Q(user2_profile=profile[0]))
 
 
-class MatchDetail(generics.RetrieveUpdateDestroyAPIView):
+class MatchDetail(generics.RetrieveUpdateAPIView):
     serializer_class = MatchSerializer
     permission_classes = [permissions.IsAuthenticated]
     lookup_field = 'id'
