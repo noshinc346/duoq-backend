@@ -1,4 +1,4 @@
-# from rest_framework.views import APIView
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Game, UserGame
 from .serializers import GameSerializer, UserGameSerializer
@@ -10,6 +10,12 @@ from django.contrib.auth.models import User
 
 
 # Create your views here.
+
+class Home(APIView):
+  def get(self, request):
+    content = {'message': 'Welcome to the pokemon-collector api home route!'}
+    return Response(content)
+
 
 class GameList(generics.ListCreateAPIView):
     queryset = Game.objects.all()
