@@ -14,7 +14,7 @@ class Chat(models.Model):
 class Message(models.Model):
     chat = models.ForeignKey(Chat, related_name='chat', on_delete=models.CASCADE)
     content = models.TextField()
-    time = models.DateTimeField()
+    time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f'{self.time} - {self.content}'

@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import generics, status, permissions
+from rest_framework import generics, status, permissions, filters
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
@@ -91,6 +91,8 @@ class ProfileDetail(generics.RetrieveAPIView):
 class MatchList(generics.ListCreateAPIView):
     serializer_class = MatchSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['user1_profile', 'user2_profile', 'recipricated']
 
     def get_queryset(self):
         user = self.request.user
