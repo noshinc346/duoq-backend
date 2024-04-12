@@ -15,12 +15,12 @@ class Game(models.Model):
             return self.name
 
 class UserGame(models.Model):
-    profile_id = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    game_id = models.ForeignKey(Game, on_delete=models.CASCADE)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
     status = models.CharField(max_length=2, choices=STATUS, default=STATUS[0][0])
     ign = models.CharField(max_length=30)
     rank = models.CharField(max_length=20)
     competitive = models.BooleanField()
 
     def __str__(self):
-        return f'{self.profile_id.name} - {self.game_id.name}'
+        return f'{self.profile.name} - {self.game.name}'

@@ -17,8 +17,8 @@ class GameSerializer(serializers.ModelSerializer):
                 ]
 
 class UserGameSerializer(serializers.ModelSerializer):
-    user = ProfileSerializer(many=True, read_only=True)
-    game = GameSerializer(many=True, read_only=True)
+    user = ProfileSerializer(read_only=True)
+    game = GameSerializer(read_only=True)
 
     class Meta:
         model = UserGame
