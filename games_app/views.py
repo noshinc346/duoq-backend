@@ -40,7 +40,7 @@ class GameList(generics.ListCreateAPIView):
 #         context['profile_serializer'] = ProfileSerializer(instance=self.get_profile(self.kwargs['user_id']))
 #         return context
 
-class UserGameList(generics.ListCreateAPIView):
+class UserGameList(generics.ListAPIView):
     serializer_class = UserGameSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['rank', 'game_id', 'status']
@@ -50,15 +50,24 @@ class UserGameList(generics.ListCreateAPIView):
         user_id = self.kwargs['user_id']
         user = User.objects.get(pk=user_id)
         profile = user.profile  # Assuming you have a OneToOneField linking User to Profile
-        return UserGame.objects.filter(profile_id=profile.id)
+        return UserGame.objects.filter(profile=profile).select_related('game')
     
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        user_id = self.kwargs['user_id']
-        user = User.objects.get(pk=user_id)
-        profile = user.profile  # Assuming you have a OneToOneField linking User to Profile
-        context['profile_serializer'] = ProfileSerializer(instance=profile)
+        #user_id = self.kwargs['user_id']
+   #     user = User.objects.get(pk=user_id)
+    #    profile = user.profile  # Assuming you have a OneToOneField linking User to Profile
+     #   context['profile_serializer'] = ProfileSerializer(instance=profile)
         return context
+
+class MakeUserGame(generics.CreateAPIView):
+    serializer_class = UserGameSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return UserGame.objects.filter(profile=user)
+
 
 class GameDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = GameSerializer
