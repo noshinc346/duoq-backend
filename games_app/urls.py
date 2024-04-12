@@ -9,4 +9,4 @@ urlpatterns = [
         path('games/usergames/detail/<int:game_id>/', UserGameDetail.as_view(), name='user-game-detail'),
         path('', Home.as_view(), name='home'),
         path('games/usergames/for/<int:game_id>/', UserGamesList.as_view(), name='usergames-list'),
-        ]
+]
