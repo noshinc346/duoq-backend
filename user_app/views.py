@@ -4,10 +4,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from .serializers import UserSerializer, ProfileSerializer, MatchSerializer, PreferenceSerializer
+from games_app.serializers import UserGameSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from .models import Profile, Match, Preference
+from games_app.models import UserGame
 from rest_framework.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -62,6 +64,24 @@ class VerifyUserView(APIView):
       'access': str(refresh.access_token),
       'user': UserSerializer(user).data
     })
+  
+class ProfilesView(generics.ListAPIView):
+   serializer_class = ProfileSerializer
+
+   def get_queryset(self):
+      return Profile.objects.all()
+
+   def list(self, request, *args, **kwargs):
+      queryset = self.get_queryset()
+      profiles_data = ProfileSerializer(queryset, many=True).data
+
+      for profile in profiles_data:
+         profile_obj = Profile.objects.get(id=profile['id'])
+         user_games = UserGame.objects.filter(profile=profile_obj)
+         profile['user_games'] = UserGameSerializer(user_games, many=True).data
+
+      return Response(profiles_data)
+
   
   
   #Profile View
