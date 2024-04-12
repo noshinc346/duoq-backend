@@ -27,6 +27,9 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class MatchSerializer(serializers.ModelSerializer):
+    user1_profile = ProfileSerializer(read_only=True)
+    user2_profile = ProfileSerializer(read_only=True)
+    
     class Meta:
         model = Match
         fields = '__all__'
