@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Game, UserGame
 from .serializers import GameSerializer, UserGameSerializer
-from rest_framework import generics, filters
+from rest_framework import generics, filters, permissions
 # from user_app.serializers import ProfileSerializer
 from user_app.models import Profile
 from user_app.serializers import ProfileSerializer
@@ -44,6 +44,7 @@ class UserGameList(generics.ListCreateAPIView):
     serializer_class = UserGameSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['rank', 'game_id', 'status']
+    permission_classes = [permissions.IsAuthenticated]
    
     def get_queryset(self):
         user_id = self.kwargs['user_id']
@@ -69,6 +70,9 @@ class GameDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class UserGameDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserGameSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
    # lookup_field = 'id'
 
     def get_queryset(self):
@@ -82,3 +86,21 @@ class UserGameDetail(generics.RetrieveUpdateDestroyAPIView):
         obj = generics.get_object_or_404(queryset)
         self.check_object_permissions(self.request, obj)
         return obj
+
+class UserGamesList(generics.ListAPIView):
+    serializer_class = UserGameSerializer
+    #filter_backends = [filters.SearchFilter]
+    #search_fields = ['rank', 'game_id', 'status']
+    #queryset = UserGame.objects.all()
+    #permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        game_id = self.kwargs['game_id']
+        return UserGame.objects.filter(game_id=game_id)
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        obj = generics.get_object_or_404(queryset)
+        self.check_object_permissions(self.request, obj)
+        return obj
+
