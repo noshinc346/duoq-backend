@@ -117,7 +117,20 @@ class MatchList(generics.ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
         profile = Profile.objects.filter(user=user)
-        return Match.objects.filter(Q(user1_profile=profile[0]) | Q(user2_profile=profile[0]))
+        return Match.objects.filter(Q(user1_profile=profile[0]) | Q(user2_profile=profile[0])).select_related('user1_profile', 'user2_profile')
+
+    def perform_create(self, serializer):
+        # Set user1_profile_id and user2_profile_id fields before saving
+        user1_profile_id = self.request.data.get('user1_profile_id')
+        user2_profile_id = self.request.data.get('user2_profile_id')
+        
+        # Assuming you want to associate profiles with the currently authenticated user
+        user = self.request.user
+        user1_profile = Profile.objects.get(user=user, pk=user1_profile_id)
+        user2_profile = Profile.objects.get(user=user, pk=user2_profile_id)
+
+        # Call the serializer's save method with the provided data
+        serializer.save(user1_profile=user1_profile, user2_profile=user2_profile)
 
 
 class MatchDetail(generics.RetrieveUpdateAPIView):

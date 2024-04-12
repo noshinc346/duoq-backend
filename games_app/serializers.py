@@ -30,7 +30,7 @@ class UserGameSerializer(serializers.ModelSerializer):
         validators = [
                 UniqueTogetherValidator(
                     queryset = UserGame.objects.all(),
-                    fields = ['profile_id', 'game_id'],
+                    fields = ['profile', 'game'],
                     message = "you already have this game in your libarary"
                     )
                 ]
