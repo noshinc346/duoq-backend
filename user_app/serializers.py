@@ -28,40 +28,34 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class MatchSerializer(serializers.ModelSerializer):
-    user1_profile = ProfileSerializer(read_only=True)
-    user2_profile = ProfileSerializer(read_only=True)
-    user1_profile_id = serializers.IntegerField(write_only=True)
-    user2_profile_id = serializers.IntegerField(write_only=True)
-
+    def __init__(self, *args, **kwargs):
+        super(MatchSerializer, self).__init__(*args, **kwargs)
+        # Make fields writable conditionally based on the request type (check for 'view' and 'request' in context)
+        request = self.context.get('request')
+        if request and request.method == 'POST':
+            self.fields['user1_profile'] = serializers.PrimaryKeyRelatedField(queryset=Profile.objects.all())
+            self.fields['user2_profile'] = serializers.PrimaryKeyRelatedField(queryset=Profile.objects.all())
+        else:
+            self.fields['user1_profile'] = ProfileSerializer(read_only=True)
+            self.fields['user2_profile'] = ProfileSerializer(read_only=True)
 
     class Meta:
         model = Match
         fields = '__all__'
         validators = [
-                UniqueTogetherValidator(
-                    queryset = Match.objects.all(),
-                    fields = ['user1_profile', 'user2_profile'],
-                    message = "you already have this match in your libarary"
-                    )
-                ]
+            serializers.UniqueTogetherValidator(
+                queryset=Match.objects.all(),
+                fields=['user1_profile', 'user2_profile'],
+                message="You already have this match in your library"
+            )
+        ]
 
     def create(self, validated_data):
-        # Fetch the Profile and Game instances using the provided IDs
-        user1_profile = Profile.objects.get(pk=validated_data.pop('user1_profile_id'))
-        user2_profile = Profile.objects.get(pk=validated_data.pop('user2_profile_id'))
-
-        # Create and return the UserGame instance
-        match = Match.objects.create(user1_profile=user1_profile, user2_profile=user2_profile, **validated_data)
+        match = Match.objects.create(**validated_data)
         return match
+
 
 class PreferenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Preference
         fields = '__all__'
-
-
-
-
-
-
-        
