@@ -64,22 +64,53 @@ class VerifyUserView(APIView):
       'user': UserSerializer(user).data
     })
   
+
 class ProfilesView(generics.ListAPIView):
-   serializer_class = ProfileSerializer
+    serializer_class = ProfileSerializer
 
-   def get_queryset(self):
-      return Profile.objects.all()
+    def get_queryset(self):
+        # Get the logged-in user
+        user = self.request.user
 
-   def list(self, request, *args, **kwargs):
-      queryset = self.get_queryset()
-      profiles_data = ProfileSerializer(queryset, many=True).data
+        # Retrieve the profile associated with the logged-in user
+        user_profile = get_object_or_404(Profile, user=user)
 
-      for profile in profiles_data:
-         profile_obj = Profile.objects.get(id=profile['id'])
-         user_games = UserGame.objects.filter(profile=profile_obj)
-         profile['user_games'] = UserGameSerializer(user_games, many=True).data
+        # Fetch IDs of profiles that should be excluded based on 'recipricated' or 'deleted' being true
+        excluded_ids = set(Match.objects.filter(
+            Q(user1_profile=user_profile) & (Q(recipricated=True) | Q(deleted=True))
+        ).values_list('user2_profile__id', flat=True))
 
-      return Response(profiles_data)
+        excluded_ids.update(Match.objects.filter(
+            Q(user2_profile=user_profile) & (Q(recipricated=True) | Q(deleted=True))
+        ).values_list('user1_profile__id', flat=True))
+
+        # Add the logged-in user's own profile ID to ensure it's not included in the results
+        excluded_ids.add(user_profile.id)
+
+        # Return profiles that are not in the excluded_ids and include profiles with no match at all
+        return Profile.objects.exclude(id__in=excluded_ids)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = ProfileSerializer(queryset, many=True)
+        return Response(serializer.data)
+  
+# class ProfilesView(generics.ListAPIView):
+#    serializer_class = ProfileSerializer
+
+#    def get_queryset(self):
+#       return Profile.objects.all()
+
+#    def list(self, request, *args, **kwargs):
+#       queryset = self.get_queryset()
+#       profiles_data = ProfileSerializer(queryset, many=True).data
+
+#       for profile in profiles_data:
+#          profile_obj = Profile.objects.get(id=profile['id'])
+#          user_games = UserGame.objects.filter(profile=profile_obj)
+#          profile['user_games'] = UserGameSerializer(user_games, many=True).data
+
+#       return Response(profiles_data)
 
   
   
