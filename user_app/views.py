@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework import generics, status, permissions, filters
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
@@ -10,10 +10,9 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from .models import Profile, Match, Preference
 from games_app.models import UserGame
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, NotFound
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-
 
 # Create your views here.
 
@@ -117,18 +116,81 @@ class MatchList(generics.ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
         profile = Profile.objects.filter(user=user)
-        return Match.objects.filter(Q(user1_profile=profile[0]) | Q(user2_profile=profile[0]))
+        return Match.objects.filter(Q(user1_profile=profile[0]) | Q(user2_profile=profile[0])).select_related('user1_profile', 'user2_profile')
 
+    def perform_create(self, serializer):
+      serializer.save()
 
 class MatchDetail(generics.RetrieveUpdateAPIView):
     serializer_class = MatchSerializer
     permission_classes = [permissions.IsAuthenticated]
-    lookup_field = 'id'
 
-    def get_queryset(self):
-        user = self.request.user
-        profile = Profile.objects.filter(user=user)
-        return Match.objects.filter(Q(user1_profile=profile[0]) | Q(user2_profile=profile[0]))
+    def get_object(self):
+        # Get the matched profile ID from the URL
+        matched_profile_id = self.kwargs.get('id')
+
+        # Get the profile of the logged-in user
+        user_profile = get_object_or_404(Profile, user=self.request.user)
+
+        # Fetch the profile of the matched user
+        matched_profile = get_object_or_404(Profile, id=matched_profile_id)
+
+        # Find the Match where one of the profiles is the user's and the other is the matched profile
+        match = Match.objects.filter(
+            (Q(user1_profile=user_profile) & Q(user2_profile=matched_profile)) |
+            (Q(user1_profile=matched_profile) & Q(user2_profile=user_profile))
+        ).first()
+
+        if not match:
+            raise NotFound(f'No Match found between profile {user_profile.id} and {matched_profile_id}.')
+
+        return match
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+# class MatchDetail(generics.RetrieveUpdateAPIView):
+#     serializer_class = MatchSerializer
+#     permission_classes = [permissions.IsAuthenticated]
+
+#     def get_object(self):
+#         # Get the profile ID from the URL
+#         profile_id = self.kwargs.get('id')
+
+
+#         # Fetch the profile based on ID only
+#         profile = get_object_or_404(Profile, id=profile_id)
+
+#         # Find a Match where the given profile is either user1_profile or user2_profile
+#         match = Match.objects.filter(
+#             Q(user1_profile=profile) | Q(user2_profile=profile)
+#         ).first()
+
+#         if not match:
+#             raise NotFound('No Match found for the given profile ID.')
+
+#         return match
+
+#     def update(self, request, *args, **kwargs):
+#         instance = self.get_object()
+#         serializer = self.get_serializer(instance, data=request.data, partial=True)
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save()
+#         return Response(serializer.data)
+
+# class MatchDetail(generics.RetrieveUpdateAPIView):
+#     serializer_class = MatchSerializer
+#     permission_classes = [permissions.IsAuthenticated]
+#     lookup_field = 'id'
+
+#     def get_queryset(self):
+#         user = self.request.user
+#         profile = Profile.objects.filter(user=user)
+#         return Match.objects.filter(Q(user1_profile=profile[0]) | Q(user2_profile=profile[0]))
 
 
 class PreferenceDetail(generics.RetrieveUpdateAPIView):
