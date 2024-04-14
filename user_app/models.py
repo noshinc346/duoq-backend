@@ -26,7 +26,7 @@ class Profile(models.Model):
 
 
     def __str__(self):
-        return self.user.username
+        return f"{self.user.username} ({self.id})"
 
 class Match(models.Model):
     user1_profile = models.ForeignKey(Profile, related_name='matches_as_user1', on_delete=models.CASCADE)
@@ -35,7 +35,7 @@ class Match(models.Model):
     deleted = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'Match between {self.user1_profile.user.username} and {self.user2_profile.user.username}'
+        return f'Match between {self.user1_profile.user.username} ({self.user1_profile.id}) and {self.user2_profile.user.username} ({self.user2_profile.id})'
 
 
 class Preference(models.Model):
