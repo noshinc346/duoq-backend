@@ -18,8 +18,8 @@ class Profile(models.Model):
     bio = models.TextField()
     name = models.CharField(max_length=100)
     dob = models.DateField('DOB', null=True, blank=True)
-    profile_picture = models.ImageField(upload_to='profile-pics', blank=True, null=True)
-    banner = models.ImageField(upload_to='banners', blank=True, null=True)
+    profile_picture = models.CharField(blank=True, null=True)
+    banner = models.CharField(blank=True, null=True)
     # Removed direct ManyToManyField relationship with Game
     matches = models.ManyToManyField('self', through='Match', symmetrical=False)
     gender = models.CharField(choices = GENDER, default = GENDER[4][1])
