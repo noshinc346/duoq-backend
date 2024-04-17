@@ -12,7 +12,7 @@ from .models import Profile, Match, Preference
 from games_app.models import UserGame
 from rest_framework.exceptions import PermissionDenied, NotFound
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 
 # Create your views here.
 
@@ -66,34 +66,69 @@ class VerifyUserView(APIView):
   
 
 class ProfilesView(generics.ListAPIView):
-    serializer_class = ProfileSerializer
+  serializer_class = ProfileSerializer
 
-    def get_queryset(self):
-        # Get the logged-in user
-        user = self.request.user
+  def get_queryset(self):
+      user = self.request.user
+      user_profile = get_object_or_404(Profile, user=user)
 
-        # Retrieve the profile associated with the logged-in user
-        user_profile = get_object_or_404(Profile, user=user)
+      excluded_ids = set(Match.objects.filter(
+          Q(user1_profile=user_profile) & (Q(recipricated=True) | Q(deleted=True))
+      ).values_list('user2_profile__id', flat=True))
 
-        # Fetch IDs of profiles that should be excluded based on 'recipricated' or 'deleted' being true
-        excluded_ids = set(Match.objects.filter(
-            Q(user1_profile=user_profile) & (Q(recipricated=True) | Q(deleted=True))
-        ).values_list('user2_profile__id', flat=True))
+      excluded_ids.update(Match.objects.filter(
+          Q(user2_profile=user_profile) & (Q(recipricated=True) | Q(deleted=True))
+      ).values_list('user1_profile__id', flat=True))
 
-        excluded_ids.update(Match.objects.filter(
-            Q(user2_profile=user_profile) & (Q(recipricated=True) | Q(deleted=True))
-        ).values_list('user1_profile__id', flat=True))
+      excluded_ids.add(user_profile.id)
 
-        # Add the logged-in user's own profile ID to ensure it's not included in the results
-        excluded_ids.add(user_profile.id)
+      # Prefetch the UserGame objects related to each Profile to avoid N+1 query issues
+      user_games_prefetch = Prefetch('usergame_set', queryset=UserGame.objects.all(), to_attr='fetched_user_games')
 
-        # Return profiles that are not in the excluded_ids and include profiles with no match at all
-        return Profile.objects.exclude(id__in=excluded_ids)
+      return Profile.objects.exclude(id__in=excluded_ids).prefetch_related(user_games_prefetch)
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = ProfileSerializer(queryset, many=True)
-        return Response(serializer.data)
+  def list(self, request, *args, **kwargs):
+      queryset = self.get_queryset()
+      profiles_data = ProfileSerializer(queryset, many=True).data
+
+      # Inject user_games data into the profiles data
+      for profile in profiles_data:
+          profile_obj = next((p for p in queryset if p.id == profile['id']), None)
+          if profile_obj and hasattr(profile_obj, 'fetched_user_games'):
+              profile['user_games'] = UserGameSerializer(profile_obj.fetched_user_games, many=True).data
+
+      return Response(profiles_data)
+
+
+# class ProfilesView(generics.ListAPIView):
+#     serializer_class = ProfileSerializer
+
+#    def get_queryset(self):
+#         # Get the logged-in user
+#         user = self.request.user
+
+#         # Retrieve the profile associated with the logged-in user
+#         user_profile = get_object_or_404(Profile, user=user)
+
+#         # Fetch IDs of profiles that should be excluded based on 'recipricated' or 'deleted' being true
+#         excluded_ids = set(Match.objects.filter(
+#             Q(user1_profile=user_profile) & (Q(recipricated=True) | Q(deleted=True))
+#         ).values_list('user2_profile__id', flat=True))
+
+#         excluded_ids.update(Match.objects.filter(
+#             Q(user2_profile=user_profile) & (Q(recipricated=True) | Q(deleted=True))
+#         ).values_list('user1_profile__id', flat=True))
+
+#         # Add the logged-in user's own profile ID to ensure it's not included in the results
+#         excluded_ids.add(user_profile.id)
+
+#         # Return profiles that are not in the excluded_ids and include profiles with no match at all
+#         return Profile.objects.exclude(id__in=excluded_ids)
+
+#     def list(self, request, *args, **kwargs):
+#         queryset = self.get_queryset()
+#         serializer = ProfileSerializer(queryset, many=True)
+#         return Response(serializer.data)
   
 # class ProfilesView(generics.ListAPIView):
 #    serializer_class = ProfileSerializer
